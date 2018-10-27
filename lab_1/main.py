@@ -41,7 +41,7 @@ def plot(x_values, servers_a, servers_b, lamda=True):
     pylab.plot(x_values, [server.stats_mean_clients_live_time for server in servers_a], 'k-', label='A')
     pylab.plot(x_values, [server.stats_mean_clients_live_time for server in servers_b], 'k--', label='B')
     pylab.legend(loc='upper left')
-    pylab.title(f'Mean clients live time in system (quantums = {QUANTUMS})')
+    pylab.title(f'Mean client\'s live time in system (quantums = {QUANTUMS})')
     pylab.xlabel('$\lambda$' if lamda else '$\sigma$')
     pylab.ylabel('$Time _{quantums}$')
     pylab.show()
@@ -50,25 +50,33 @@ def plot(x_values, servers_a, servers_b, lamda=True):
     pylab.plot(x_values, [server.stats_mean_clients_count for server in servers_a], 'k-', label='A')
     pylab.plot(x_values, [server.stats_mean_clients_count for server in servers_b], 'k--', label='B')
     pylab.legend(loc='upper left')
-    pylab.title(f'Mean clients count in system (quantums = {QUANTUMS})')
+    pylab.title(f'Mean client\'s count in system (quantums = {QUANTUMS})')
     pylab.xlabel('$\lambda$' if lamda else '$\sigma$')
-    pylab.ylabel('$Time _{quantums}$')
+    pylab.ylabel('Count')
     pylab.show()
 
-    # count of clients by moments
+    # stablity
 
     def stability(servers):
 
-        figure, axes = pylab.subplots(int(numpy.ceil(len(servers) / 2)), 2, sharey=True)
-        for index, server in enumerate(servers):
-            axes.flat[index].plot(range(len(server.clients_total)), server.clients_total, 'k-')
-            axes.flat[index].set_xlabel('T')
-            axes.flat[index].set_ylabel('Count')
-            axes.flat[index].set_title(server.title)
-            axes.flat[index].reset_position()
+        one, two, three = 0, int(len(servers_b) / 2), -2
+        moments_start, moments_end = 0, 150
+        _slice = slice(moments_start, moments_end)
 
-        figure.subplots_adjust(hspace=1)
-        figure.suptitle(f'Mean clients count in system at quantum')
+        label = '$\lambda$' if lamda else '$\sigma$'
+        pylab.plot(range(moments_start, moments_end), servers[one].clients_total[_slice], 'k*',
+                   label='%s = %f.2' % (label, x_values[one]))
+
+        pylab.plot(range(moments_start, moments_end), servers[two].clients_total[_slice], 'k--',
+                   label='%s = %f.2' % (label, x_values[two]))
+
+        pylab.plot(range(moments_start, moments_end), servers[three].clients_total[_slice], 'k-',
+                   label='%s = %f.2' % (label, x_values[three]))
+
+        pylab.legend(loc='upper left')
+        pylab.title(f'Clients in system per moment (quantums = {QUANTUMS})')
+        pylab.xlabel('Quantum (slot)')
+        pylab.ylabel('Count')
         pylab.show()
 
     stability(servers_a)
@@ -101,7 +109,7 @@ if __name__ == '__main__':
 
     # POISON
 
-    POISON_LAMBDAS = list(numpy.arange(0.05, 0.5, 0.05))
+    POISON_LAMBDAS = list(numpy.arange(0.05, 0.55, 0.05))
 
     print('\n\nPOISON A')
     servers_poison_a = []

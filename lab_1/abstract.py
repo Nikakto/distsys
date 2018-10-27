@@ -1,3 +1,4 @@
+import numpy
 import random
 
 
@@ -59,32 +60,41 @@ class AbstractServer:
     def moment(self, end=False):
         """
         Emulate quantum of time for sending messages by clients
-        :return:
+        :return: list of clients send message
         """
+
+        result = []
 
         clients_added = self.client_add()
         self.clients_new.append(len(clients_added))
 
         _client_sending = []
+
+        if self.equality:
+            client_message_probability = 1 / len(self.clients) if self.clients else 1
+        else:
+            client_message_probability = self.client_message_probability
+
+        _client_sending = []
         for client in self.clients:
-
-            if self.equality:
-                client_message_probability = 1 / len(self.clients) if self.clients else 1
-            else:
-                client_message_probability = self.client_message_probability
-
-            _client_sending.append(client) if client(client_message_probability) else None
+            client.live_time += 1
+            if random.random() < client_message_probability or client.live_time == 0:
+                _client_sending.append(client)
 
         self.clients_total.append(len(self.clients))
 
         if len(_client_sending) == 1:
-            client = _client_sending.pop()
+            client = _client_sending[0]
             self.clients.remove(client)
             self.clients_live_time.append(client.live_time)
+            result.append(client)
 
         # final moment - add live time of all clients in system
         if end:
             [self.clients_live_time.append(client.live_time) for client in self.clients]
+
+        return result
+
 
     @property
     def stats_mean_clients_count(self):
