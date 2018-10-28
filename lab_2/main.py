@@ -5,7 +5,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from lab_1.abstract import AbstractServer
 
-QUANTUMS = 2000
+QUANTUMS = 1000
+RUNS = 10
 
 
 # ======================================================================================================================
@@ -102,23 +103,48 @@ if __name__ == '__main__':
 
     min_means, min_means_x, min_means_y = [], [], []
 
-    results = [(poison_lambda, server_emulating(poison_lambda/4, P_RECEIVERS, P_REPEATERS)) for poison_lambda in POISON_LAMBDAS]
+    results = []
 
-    for poison_lambda, result in results:
+    for poison_lambda in POISON_LAMBDAS:
 
-        print('\n\nMATRIX', 'lambda = %.2f' % poison_lambda, '; column - p_repeaters; rows - p_receiver')
-        print(' '*8 + ('{:7.2f} ' * len(P_REPEATERS)).format(*P_REPEATERS))
-        for index, row_data in enumerate(result):
+        min_means_run = []
+        min_means_x_run = []
+        min_means_y_run = []
 
-            print('{:7.2f} '.format(P_RECEIVERS[index]), end='')
-            print(('{:7.2f} ' * len(row_data)).format(*row_data))
+        for run in range(RUNS):
 
-        matrix = numpy.asmatrix(result)
-        min_mean_x, min_mean_y = numpy.unravel_index(matrix.argmin(), matrix.shape)
+            result = server_emulating(poison_lambda / 4, P_RECEIVERS, P_REPEATERS)
 
-        min_means.append(result[3][3])
-        min_means_x.append(min_mean_x)
-        min_means_y.append(min_mean_y)
+            matrix = numpy.asmatrix(result)
+            min_mean_x, min_mean_y = numpy.unravel_index(matrix.argmin(), matrix.shape)
+
+            min_means_run.append(result[min_mean_x][min_mean_y])
+            min_means_x_run.append(P_REPEATERS[min_mean_x])
+            min_means_y_run.append(P_RECEIVERS[min_mean_y])
+
+            # print('\n\nMATRIX', 'lambda = %.2f' % poison_lambda, '; column - p_repeaters; rows - p_receiver')
+            # print(' '*8 + ('{:7.2f} ' * len(P_REPEATERS)).format(*P_REPEATERS))
+            # for index, row_data in enumerate(result):
+            #
+            #     print('{:7.2f} '.format(P_RECEIVERS[index]), end='')
+            #     print(('{:7.2f} ' * len(row_data)).format(*row_data))
+
+            if run < 1:
+
+                with open('matrix_%.2f' % poison_lambda, 'w') as f:
+
+                    f.write('MATRIX' + 'lambda = %.2f' % poison_lambda + '; column - p_repeaters; rows - p_receiver\n')
+                    f.write(' ' * 8 + ('{:7.2f}\t' * len(P_REPEATERS)).format(*P_REPEATERS))
+
+                    for index, row_data in enumerate(result):
+                        f.write('\n{:7.2f}\t'.format(P_RECEIVERS[index]))
+                        f.write(('{:7.2f}\t' * len(row_data)).format(*row_data))
+
+        results.append([
+            min_means.append(sum(min_means_run) / RUNS),
+            min_means_x.append(sum(min_means_x_run) / RUNS),
+            min_means_y.append(sum(min_means_y_run) / RUNS),
+        ])
 
     pylab.plot(POISON_LAMBDAS, min_means, 'k-', label='Min means')
     pylab.legend(loc='upper left')
@@ -127,8 +153,8 @@ if __name__ == '__main__':
     pylab.ylabel('Clients')
     pylab.show()
 
-    pylab.plot(POISON_LAMBDAS, [P_REPEATERS[index] for index in min_means_x], 'k-', label='P receivers')
-    pylab.plot(POISON_LAMBDAS, [P_RECEIVERS[index] for index in min_means_y], 'k*', label='P repeaters')
+    pylab.plot(POISON_LAMBDAS, min_means_x, 'k-', label='P receivers')
+    pylab.plot(POISON_LAMBDAS, min_means_y, 'k*', label='P repeaters')
     pylab.legend(loc='upper left')
     pylab.title(f'P of (receiver and repeater) to $\lambda$')
     pylab.xlabel('$\lambda$')
