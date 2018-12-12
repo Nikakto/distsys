@@ -7,7 +7,7 @@ def part(n, m, _lambda):
     chance = (1 - 1 / n) ** (n - 1) if n > 0 else 1
 
     if n < 2:
-        return _lambda**(m) / special.factorial(m) * np.exp(-_lambda)
+        return _lambda**m / special.factorial(m) * np.exp(-_lambda)
 
     elif n > m:
         return chance * np.exp(-_lambda)
