@@ -80,7 +80,7 @@ class AbstractServer:
             client.live_time += 1
             if random.random() < client_message_probability or client.live_time == 0:
                 _client_sending.append(client)
-
+        #
         self.clients_total.append(len(self.clients))
 
         if len(_client_sending) == 1:
@@ -98,12 +98,12 @@ class AbstractServer:
 
     @property
     def stats_mean_clients_count(self):
-        return sum(self.clients_total) / len(self.clients_total)
+        return sum(self.clients_total) / len(self.clients_total) if len(self.clients_total) else 0
 
     @property
     def stats_mean_clients_live_time(self):
-        return sum(self.clients_live_time) / len(self.clients_live_time)
+        return sum(self.clients_live_time) / len(self.clients_live_time) if len(self.clients_live_time) else 0
 
     @property
     def stats_mean_clients_new(self):
-        return sum(self.clients_new) / len(self.clients_new)
+        return sum(self.clients_new) / len(self.clients_new) if len(self.clients_new) else 0

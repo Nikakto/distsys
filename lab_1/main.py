@@ -3,7 +3,7 @@ from matplotlib import pylab
 
 from lab_1.abstract import AbstractServer
 
-QUANTUMS = 10000
+QUANTUMS = 5000
 
 # ======================================================================================================================
 # Main lab
@@ -29,9 +29,9 @@ def server_emulating(server, moments=QUANTUMS):
         server.moment(end=end)
 
     # stats
-    print('mean clients per moment:', server.stats_mean_clients_new)
-    print('mean live time:', server.stats_mean_clients_live_time)
-    print('mean count of clients:', server.stats_mean_clients_count)
+    # print('mean clients per moment:', server.stats_mean_clients_new)
+    # print('mean live time:', server.stats_mean_clients_live_time)
+    # print('mean count of clients:', server.stats_mean_clients_count)
 
 
 def plot(x_values, servers_a, servers_b, lamda=True):
@@ -109,7 +109,39 @@ if __name__ == '__main__':
 
     # POISON
 
-    POISON_LAMBDAS = list(numpy.arange(0.05, 0.55, 0.05))
+    POISON_LAMBDAS = list(numpy.arange(0.05, 0.35, 0.01))
+
+    # THEORY
+
+    means = []
+
+    for poisson_lambda in POISON_LAMBDAS:
+
+        mean_lambda = []
+        for i in range(50):
+            print(poisson_lambda, i)
+            server = ServerPoison(poisson_lambda, client_message_probability=1, equality=True)
+            server.title = f'$\lambda = {poisson_lambda:.2f}$'
+            server_emulating(server, moments=QUANTUMS)
+            mean_lambda.append(server.stats_mean_clients_count)
+
+        means.append(sum(mean_lambda) / len(mean_lambda))
+
+    pylab.plot(POISON_LAMBDAS, means, 'k-', label='=practice')
+    pylab.title(f'Mean client\'s count in system (quantums = {QUANTUMS})')
+    pylab.xlabel('$\lambda$')
+    pylab.ylabel('Count')
+
+    from lab_1.part import theory
+    yt = [theory(x, 100) for x in numpy.arange(0.01, max(POISON_LAMBDAS), 0.01)]
+    pylab.plot(numpy.arange(0.01, max(POISON_LAMBDAS), 0.01), yt, 'k*', label='theory')
+    pylab.legend(loc='upper left')
+
+    pylab.show()
+
+    exit()  # remove for full first lab
+
+    # MODELS
 
     print('\n\nPOISON A')
     servers_poison_a = []
