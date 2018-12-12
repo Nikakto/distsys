@@ -1,7 +1,5 @@
 import numpy
 from matplotlib import pylab
-from mpl_toolkits.mplot3d import Axes3D
-
 
 from lab_1.abstract import AbstractServer
 
@@ -97,7 +95,7 @@ def server_emulating(poisson_lambda, p_receivers, p_repeaters):
 
 if __name__ == '__main__':
 
-    POISON_LAMBDAS = list(numpy.arange(0.05, 0.40, 0.05))
+    POISON_LAMBDAS = list(numpy.arange(0.05, 0.45, 0.05))
     P_RECEIVERS = list(numpy.arange(0.05, 1.00, 0.05))
     P_REPEATERS = list(numpy.arange(0.05, 1.00, 0.05))
 
@@ -122,29 +120,18 @@ if __name__ == '__main__':
             min_means_x_run.append(P_REPEATERS[min_mean_x])
             min_means_y_run.append(P_RECEIVERS[min_mean_y])
 
-            # print('\n\nMATRIX', 'lambda = %.2f' % poison_lambda, '; column - p_repeaters; rows - p_receiver')
-            # print(' '*8 + ('{:7.2f} ' * len(P_REPEATERS)).format(*P_REPEATERS))
-            # for index, row_data in enumerate(result):
-            #
-            #     print('{:7.2f} '.format(P_RECEIVERS[index]), end='')
-            #     print(('{:7.2f} ' * len(row_data)).format(*row_data))
+        min_means.append(sum(min_means_run) / RUNS)
+        min_means_x.append(sum(min_means_x_run) / RUNS)
+        min_means_y.append(sum(min_means_y_run) / RUNS)
 
-            if run < 1:
-
-                with open('matrix_%.2f' % poison_lambda, 'w') as f:
-
-                    f.write('MATRIX' + 'lambda = %.2f' % poison_lambda + '; column - p_repeaters; rows - p_receiver\n')
-                    f.write(' ' * 8 + ('{:7.2f}\t' * len(P_REPEATERS)).format(*P_REPEATERS))
-
-                    for index, row_data in enumerate(result):
-                        f.write('\n{:7.2f}\t'.format(P_RECEIVERS[index]))
-                        f.write(('{:7.2f}\t' * len(row_data)).format(*row_data))
-
-        results.append([
-            min_means.append(sum(min_means_run) / RUNS),
-            min_means_x.append(sum(min_means_x_run) / RUNS),
-            min_means_y.append(sum(min_means_y_run) / RUNS),
-        ])
+    with open('results', 'w') as f:
+        f.write(', '.join('%.3f' % v for v in POISON_LAMBDAS))
+        f.write('\n')
+        f.write(', '.join('%.3f' % v for v in min_means))
+        f.write('\n')
+        f.write(', '.join('%.3f' % v for v in min_means_x))
+        f.write('\n')
+        f.write(', '.join('%.3f' % v for v in min_means_y))
 
     pylab.plot(POISON_LAMBDAS, min_means, 'k-', label='Min means')
     pylab.legend(loc='upper left')
